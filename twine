@@ -1,0 +1,36 @@
+(if condition)
+  [[link text]](link)
+(else)
+  [[link text]](link)
+
+(if hasItem("key"))
+  [[Go to the door]](door)
+(else)
+  [[The door is locked.]]()
+
+(if $gameover)
+  $gameState = "over"
+(else)
+  $gameState = "playing"
+
+(if $choice == "A")
+  [[Go to the left]](left)
+  $path = "left"
+(else)
+  [[Go to the right]](right)
+  $path = "right"
+
+(if $choice == "A")
+  [Image of a cat]
+(else)
+  [Image of a dog]
+
+(if $quantity >= 10)
+  // 計算折扣
+  $discount = $price * 0.1
+  // 顯示折扣
+  [[You get a discount of $discount.]]()
+(else)
+  // 沒有折扣
+  [[There is no discount.]]()
+
