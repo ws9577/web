@@ -1,0 +1,35 @@
+# ubuntu server
+
+apt install openssh-server
+
+nano /etc/ssh/sshd_config
+  Here are some common settings you might want to adjust:
+  PermitRootLogin no (Disallow root login over SSH for security reasons)
+  PasswordAuthentication yes (Allow password-based authentication, or change to no to use key-based authentication only)
+  Subsystem sftp /usr/lib/openssh/sftp-server (Enables the SFTP subsystem)
+  After making changes, save and exit the file.
+
+systemctl restart sshd
+
+adduser newuser
+
+#Configure Firewall (if enabled)
+ufw allow ssh
+
+sftp user@server_ip
+
+# linux client
+sftp username@server_address
+
+# windows client
+1. Download and install WinSCP or FileZilla from their respective websites.
+2. Launch the application.
+3. In WinSCP, click "New Site" and enter the server details (protocol, host name/IP, username, and password).
+4. In FileZilla, go to "File > Site Manager" and create a new site with the server details.
+5. Connect to the SFTP server, and you should see the remote directory structure.
+6. You can now transfer files using drag-and-drop or the application's interface.
+
+# iMac client
+sftp username@server_address
+
+
