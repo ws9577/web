@@ -1,0 +1,61 @@
+# server
+
+apt update
+apt install nfs-kernel-server
+
+sudo mkdir -p /web/shr
+
+chown -R nobody:nogroup /web/shr
+chmod 777 /web/shr
+
+nano /etc/exports
+# edit
+/web/shr 192.168.0.0/24(rw,sync,no_subtree_check) 192.168.122.0/24(ro,sync,no_subtree_check)
+
+exportfs -a
+
+systemctl restart nfs-kernel-server
+
+# client linux
+
+apt install nfs-common
+
+mkdir /path/to/mount
+
+mount -t nfs 192.168.0.110:/web/shr /path/to/mount
+
+# client windows
+1. Download and install "Windows Services for NFS" from Microsoft's website.
+2. After installation, open the "NFS Client" from the Start menu or run nfsadmin.
+3. In the NFS Client, click "Create a new NFS Mounting..." and enter the details of your NFS server (IP address and share path).
+4. Choose a local drive letter to mount the NFS share.
+5. The NFS share will now be accessible as a drive letter on your Windows machine.
+
+# client iMac
+To use your iMac as an NFS client to access NFS shares, follow these steps:
+1. Enable NFS Client Service on your iMac:
+  Go to System Preferences > Sharing.
+  Check the box next to "Remote Login" to enable the Remote Login service.
+2. Create a directory to mount the NFS share:
+  Open Terminal on your iMac.
+  Create a new directory where you want to mount the NFS share
+mkdir /Volumes/nfs_share
+
+3. Mount the NFS share:
+  In Terminal, use the mount command to mount the NFS share:
+mount -t nfs -o resvport 192.168.0.110:/web/shr /Volumes/nfs_share
+
+4. Enter your administrator password when prompted.
+5. Verify the mount:
+  After entering your password, the NFS share should be mounted.
+  Verify this by running
+df -h
+
+6. Access the NFS share:
+  The NFS share is now accessible through the /Volumes/nfs_share directory (or the directory you specified in step 2).
+  You can navigate to this directory in the Finder or use it in Terminal commands.
+7. To unmount the NFS share, use the umount command:
+sudo umount /Volumes/nfs_share
+
+Optionally, you can also set up automatic mounting of the NFS share at boot time by editing the /etc/auto_master and /etc/auto_share files.
+However, this process is more advanced and requires careful configuration.
