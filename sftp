@@ -33,3 +33,7 @@ sftp username@server_address
 sftp username@server_address
 
 
+## rsync
+# -a (archive mode): Preserves symbolic links, file permissions, user and group ownership, and modification times.
+rsync -avz /path/to/source/ user@remote_host:/path/to/destination/
+
