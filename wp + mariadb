@@ -1,0 +1,32 @@
+# mariadb @192.168.122.160
+sudo apt install mariadb-server
+
+# Secure the MariaDB installation
+sudo mysql_secure_installation
+
+sudo mariadb
+CREATE DATABASE wordpress;
+CREATE USER 'wordpress_user'@'192.168.122.150' IDENTIFIED BY 'your_strong_password';
+GRANT ALL PRIVILEGES ON wordpress.* TO 'wordpress_user'@'192.168.122.150';
+FLUSH PRIVILEGES;
+EXIT;
+
+# apache server
+sudo apt install apache2 php php-mysql libapache2-mod-php php-curl php-gd php-mbstring php-xml php-xmlrpc php-soap php-intl php-zip
+
+# WordPress server (192.168.122.150):
+wget https://wordpress.org/latest.tar.gz
+tar -xzvf latest.tar.gz
+# Copy the extracted WordPress files to the Apache document root
+sudo cp -r wordpress/* /var/www/html/
+
+sudo chown -R www-data:www-data /var/www/html/
+sudo chmod -R 755 /var/www/html/
+
+# Open the WordPress configuration file:
+sudo nano /var/www/html/wp-config.php
+
+define( 'DB_NAME', 'wordpress' );
+define( 'DB_USER', 'wordpress_user' );
+define( 'DB_PASSWORD', 'your_strong_password' );
+define( 'DB_HOST', '192.168.122.160' );
