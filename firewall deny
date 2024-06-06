@@ -1,0 +1,53 @@
+# https://medium.com/skilluped/what-is-iptables-and-how-to-use-it-781818422e52
+
+iptables -L -n
+
+systemctl disable --now ufw
+
+iptables -P INPUT DROP
+iptables -P OUTPUT DROP
+iptables -P FORWARD DROP
+
+# To allow packets inside your loopback interface to travel without problem.
+iptables -A INPUT -i lo -j ACCEPT
+iptables -A OUTPUT -o lo -j ACCEPT
+
+# To allow DNS & DHCP packets to travel in & out your computer.
+iptables -A INPUT -p udp --dport 67 -j ACCEPT
+iptables -A INPUT -p tcp --dport 67 -j ACCEPT
+iptables -A OUTPUT -p udp --dport 53 -j ACCEPT
+iptables -A OUTPUT -p tcp --dport 53 -j ACCEPT
+iptables -A OUTPUT -p udp --dport 68 -j ACCEPT
+iptables -A OUTPUT -p tcp --dport 68 -j ACCEPT
+
+# To open SSH connection when your computer is a client you have to add two rules in both direction.
+iptables -A OUTPUT -p tcp --dport 22 -j ACCEPT
+iptables -A INPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+
+# To allow SSH connection when your computer is a server.
+iptables -A INPUT -p tcp --dport 22 -j ACCEPT
+iptables -A OUTPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+
+# If you want to be able to ping other computers, and let other computers ping yours, you should allow icmp packets.
+iptables -A INPUT -p icmp -j ACCEPT
+iptables -A OUTPUT -p icmp -j ACCEPT
+
+# If you want to be able to browse web pages, this is what you should do.
+iptables -A OUTPUT -p tcp --dport 80 -j ACCEPT
+iptables -A OUTPUT -p tcp --dport 443 -j ACCEPT
+
+# You would definitely want to log the rest of the packets which are not accepted so that you have a visual of what’s going on. It will also help you if you wanted to open a port in the future.
+iptables -N LOGGING
+iptables -A INPUT -j LOGGING
+iptables -A OUTPUT -j LOGGING
+iptables -A FORWARD -j LOGGING
+iptables -A LOGGING -j LOG --log-level error --log-prefix "iptables-dropped: "
+iptables -A LOGGING -j DROP
+# The first line creates a new chain. And in the next 3 lines, we will forward every packet to the newly created chain.
+# It doesn’t take genius to figure out that the last 2 lines will log a packet, and it will drop it afterwards.
+
+# If you want to apply NAT to your iptables, depending on whether you want to apply it to incoming connections or outgoing connection, 
+# or whether your computer’s IP address is static or dynamic, you can use the following rules.
+iptables -t nat -A OUTPUT -p tcp --dport 22 --destination 192.168.40.40 -j DNAT --to-destination 123.123.123.123:4040
+# After the above command, every outgoing traffic from your computer heading to IP address 192.168.40.40 port 22 will be sent to IP address 123.123.123.123 port 4040. 
+# This makes it possible for a NAT in the destination network to be accessible from outside that network.
