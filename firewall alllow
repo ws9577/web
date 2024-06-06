@@ -1,0 +1,100 @@
+# 實際清除規則後，查看規則
+iptables -F
+iptables -X
+iptables -Z
+iptables-save
+
+# 封包從哪個界面來 (透過 -i 界面 來設計)
+# 封包從哪個網域來 (透過 -s IP 或 -s network/netmask 來設計)
+# 封包要進入哪個網域 (透過 -d IP 或 -d network/netmask 來設計)
+# 封包使用的是那一種協定 (透過 -p [udp|tcp|icmp] 來設計)
+# 封包來源的埠口號碼 (透過 --sport ports 來設計)
+# 封包要連線的埠口號碼 (透過 --dport ports 來設計)
+# 封包的動作 (透過 -j [ACCEPT|REJECT|DROP] 來設計)
+
+# 不論什麼界面、不論什麼網域、只要是 ICMP (PING)封包協定，此封包就放行
+iptables -A INPUT -p icmp -j ACCEPT
+
+# 任何封包格式類型，只要透過 lo 這個裝置，該封包就予以放行，亦即 lo 為『信任裝置』
+iptables -A INPUT -i lo -j ACCEPT
+
+# 不論什麼界面，無論什麼網域，只要是主動連線 (NEW) 且使用 port 22/tcp 封包，就予以放行
+# 這種方式也是最常用來設定伺服器服務的規則！
+iptables -A INPUT -m state --state NEW -p tcp --dport 22 -j ACCEPT
+
+# 信任裝置，不論任何來源，連線到此裝置的封包，都會被放行！
+iptables -A INPUT -i enp2s0 -j ACCEPT
+
+# 信任網域，只要來自這個網域，任何封包都可被放行
+iptables -A INPUT -s 192.168.20.0/24 -j ACCEPT
+
+# 限制服務的使用，只信任部份來源 (因為 ssh 太重要！只放行內部來源使用較佳)
+iptables -A INPUT -i enp3s0 -s 192.168.30.0/24 -p tcp --dport 22 -j ACCEPT
+iptables -A INPUT -i enp1s0 -s 192.168.201.0/24 -p tcp --dport 22 -j ACCEPT
+
+# 放行根本機網頁伺服器有關的服務
+iptables -A INPUT -p tcp --dport 80 -j ACCEPT
+iptables -A INPUT -p tcp --dport 443 -j ACCEPT
+
+# 因為 DNS 同時具有 UDP 與 TCP 的連線功能，所以要放行兩條規則
+iptables -A INPUT -p udp --dport 53 -j ACCEPT
+iptables -A INPUT -p tcp --dport 53 -j ACCEPT
+
+# 拒絕不信任的用戶！這裡是拒絕喔！並不是丟棄！
+iptables -A INPUT -s 10.30.30.0/24 -j REJECT
+
+# 放行連線到本機的 port 5901~5910，連續埠口可以這樣寫：
+iptables -A INPUT -p tcp --dport 5901:5910 -j ACCEPT
+
+# 直接手動輸入的 iptables 指令，其動作只寫入到目前的環境中，並沒有寫入設定檔，因此下次重新開機後， 剛剛努力建立的規則，就通通消失了...那麼資料儲存檔案在哪裡？
+# 就是在 /etc/sysconfig/iptables 這個檔案中！ 這個檔案其實就是 iptables-save 的輸出資料耶！所以，要將目前的規則順序儲存下來，
+iptables-save > /etc/sysconfig/iptables
+
+# 建立本機防火牆規則執行腳本
+vim ~/iptables.sh
+#!/bin/bash
+# part 1： 清除規則並設定預設政策
+iptables -F
+iptables -X
+iptables -Z
+iptables -P INPUT   DROP
+iptables -P OUTPUT  ACCEPT
+iptables -P FORWARD ACCEPT
+
+# part 2； 基礎的三條防火牆規則
+iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+iptables -A INPUT -i lo -j ACCEPT
+iptables -A INPUT -p icmp -j ACCEPT
+
+# part 3； 拒絕黑名單、開放白名單的設定
+iptables -A INPUT -s 10.30.30.0/24 -j REJECT
+iptables -A INPUT -i enp1s0 -s 192.168.201.254 -j ACCEPT
+iptables -A INPUT -i enp2s0 -s 192.168.10.0/24 -m state --state NEW -p tcp --dport 22 -j ACCEPT
+iptables -A INPUT -i enp2s0 -s 192.168.20.0/24 -m state --state NEW -p tcp --dport 22 -j ACCEPT
+iptables -A INPUT -i enp3s0 -s 192.168.30.0/24 -m state --state NEW -p tcp --dport 22 -j ACCEPT
+
+# part 4： 一般通用放行的網際網路服務
+iptables -A INPUT -m state --state NEW -p tcp --dport  80 -j ACCEPT
+iptables -A INPUT -m state --state NEW -p tcp --dport 443 -j ACCEPT
+iptables -A INPUT -m state --state NEW -p udp --dport  53 -j ACCEPT
+iptables -A INPUT -m state --state NEW -p tcp --dport  53 -j ACCEPT
+
+# 設計上面要注意的是，因為 FORWARD 鏈是在 filter 表格內，因此你得要在 part 5 (儲存) 之前，將 FORWARD 規則寫好！ 所以，鳥哥將這些 DMZ 的資訊紀錄成為 part 4.5 的部份：
+
+
+# DMZ
+vim ~/iptables.sh
+# part 4.5.1： DMZ 設定 (針對 internet)
+iptables -A FORWARD -i enp3s0 -o enp1s0 -m state --state ESTABLISHED,RELATED -j ACCEPT
+iptables -A FORWARD -i enp3s0 -o enp1s0 -p udp --dport  53 -j ACCEPT
+iptables -A FORWARD -i enp3s0 -o enp1s0 -p tcp --dport  53 -j ACCEPT
+iptables -A FORWARD -i enp3s0 -o enp1s0 -p tcp --dport 443 -j ACCEPT
+iptables -A FORWARD -i enp3s0 -o enp1s0 -j REJECT
+# part 4.5.2： DMZ 設定 (針對 intranet)
+iptables -A FORWARD -i enp3s0 -o enp2s0 -m state --state ESTABLISHED,RELATED -j ACCEPT
+iptables -A FORWARD -i enp3s0 -o enp2s0 -j REJECT
+
+# part 5： 不要忘記儲存規則
+iptables-save > /etc/sysconfig/iptables
+
+sh ~/iptables.sh
