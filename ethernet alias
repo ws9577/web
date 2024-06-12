@@ -1,0 +1,43 @@
+# virtual ethernet interface
+
+sudo ip link add link enp4s0 name enp4s0.1 type vlan id 1
+sudo ip link set dev enp4s0.1 up
+sudo ip addr add 192.168.1.100/24 dev enp4s0.1
+
+# To configure the second virtual Ethernet interface (enp4s0.1) using Netplan
+network:
+  version: 2
+  renderer: networkd
+  ethernets:
+    enp4s0:
+      dhcp4: no
+      addresses:
+        - 192.168.1.10/24
+      gateway4: 192.168.1.1
+      nameservers:
+        addresses: [8.8.8.8, 8.8.4.4]
+    enp4s0.1:
+      dhcp4: no
+      addresses:
+        - 192.168.2.10/24
+      gateway4: 192.168.2.1
+      nameservers:
+        addresses: [8.8.8.8, 8.8.4.4]
+
+# To configure the second virtual Ethernet interface (enp4s0.1) to connect to an external LAN with DHCP server at 192.168.0.1
+network:
+  version: 2
+  renderer: networkd
+  ethernets:
+    enp4s0:
+      dhcp4: no
+      addresses:
+        - 192.168.1.10/24
+      gateway4: 192.168.1.1
+      nameservers:
+        addresses: [8.8.8.8, 8.8.4.4]
+    enp4s0.1:
+      dhcp4: true
+      dhcp-identifier: mac
+
+netplan apply
