@@ -1,0 +1,11 @@
+# Generate an SSH key pair: If you haven't already, generate an SSH key pair on the Ansible control node using the ssh-keygen command:
+ssh-keygen -t rsa -b 4096 -C "your_email@example.com"
+
+# Copy the public key to the remote hosts: You'll need to copy the public key (~/.ssh/id_rsa.pub) to each of the remote hosts within the specified range. 
+# You can use a tool like ssh-copy-id or manually append the public key to the ~/.ssh/authorized_keys file on each remote host.
+ssh-copy-id -i ~/.ssh/id_rsa.pub remote_user@192.168.0.100
+# Repeat this step for each host in the range, replacing the IP address accordingly.
+
+# Configure Ansible inventory: In your Ansible inventory file (e.g., hosts or inventory), define the hosts within the specified range. You can use the IP address range notation like this:
+[webservers]
+192.168.0.100-110
