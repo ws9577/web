@@ -1,3 +1,47 @@
+## Claude
+# Flush existing rules
+iptables -F
+iptables -X
+
+# Set default chain policies
+iptables -P INPUT DROP
+iptables -P FORWARD DROP
+iptables -P OUTPUT ACCEPT
+
+# Allow loopback interactions
+iptables -A INPUT -i lo -j ACCEPT
+
+# Allow established and related connections
+iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+
+# Allow SSH (adjust port if you're using a non-standard SSH port)
+iptables -A INPUT -p tcp --dport 22 -j ACCEPT
+
+# Allow HTTP
+iptables -A INPUT -p tcp --dport 80 -j ACCEPT
+
+# Allow HTTPS
+iptables -A INPUT -p tcp --dport 443 -j ACCEPT
+
+# Allow traffic to backend Apache server
+iptables -A OUTPUT -p tcp -d 192.168.0.201 --dport 10080 -j ACCEPT
+
+# Optional: Allow ping (ICMP)
+iptables -A INPUT -p icmp --icmp-type 8 -j ACCEPT
+
+# Log dropped packets
+iptables -A INPUT -j LOG --log-prefix "IPTables-Dropped: "
+
+# Save rules
+iptables-save > /etc/iptables/rules.v4
+
+
+# To ensure these rules persist after reboot, install the iptables-persistent package:
+
+sudo apt install iptables-persistent
+--------------------------
+
+
 # https://medium.com/skilluped/what-is-iptables-and-how-to-use-it-781818422e52
 
 iptables -L -n
