@@ -1,0 +1,72 @@
+apt install certbot python3-certbot-nginx
+
+sudo certbot --nginx -d bonbon.win -d www.bonbon.win
+
+# nginx
+server {
+    listen 80;
+    server_name bonbon.win www.bonbon.win;
+
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+
+server {
+    listen 443 ssl;
+    server_name bonbon.win www.bonbon.win;
+
+    ssl_certificate /etc/letsencrypt/live/bonbon.win/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/bonbon.win/privkey.pem;
+    include /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+
+    location / {
+        proxy_pass http://192.168.0.201:10080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+
+
+sudo nginx -t
+sudo systemctl reload nginx
+
+# auto renew opt 1:
+# Certbot automatically installs a cron job to renew your certificates. You can test the renewal process by running:
+sudo certbot renew --dry-run
+# This ensures that Certbot can automatically renew the certificate when it’s due.
+
+# auto renew opt 2:
+sudo crontab -e
+# add this:
+0 12 * * * /usr/bin/certbot renew --quiet
+
+
+# Apache Configuration (Optional)
+
+<VirtualHost *:10080>
+    ServerAdmin webmaster@bonbon.win
+    DocumentRoot /var/www/html
+    ServerName 192.168.0.201
+
+    ErrorLog ${APACHE_LOG_DIR}/error.log
+    CustomLog ${APACHE_LOG_DIR}/access.log combined
+
+    <Directory /var/www/html>
+        Options Indexes FollowSymLinks
+        AllowOverride All
+        Require all granted
+    </Directory>
+</VirtualHost>
+
+# In your WordPress configuration (wp-config.php), add these lines:
+define('WP_HOME', 'https://bonbon.win');
+define('WP_SITEURL', 'https://bonbon.win');
+
+if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') {
+    $_SERVER['HTTPS'] = 'on';
+}
+
