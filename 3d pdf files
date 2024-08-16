@@ -1,0 +1,8 @@
+# html
+
+<a href="https://externalstorage.com/yourpdf.pdf" target="_blank">
+  <div class="flipbook-wrapper">
+    [3dflipbook id="your_flipbook_id"] <!-- This is an example shortcode from the plugin -->
+  </div>
+</a>
+
