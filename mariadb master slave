@@ -1,0 +1,151 @@
+
+nano /etc/mysql/mariadb.conf.d/99-master.cnf or nano /etc/mysql/mariadb.conf
+# Add the following lines to the file:
+[mysqld]
+log-bin=mysql-bin
+server-id=1
+
+sudo systemctl restart mariadb
+
+# Create a replication user and retrieve the master status:
+mariadb
+
+CREATE USER 'repl_user'@'%' IDENTIFIED BY 'repl_password';
+GRANT REPLICATION SLAVE ON *.* TO 'repl_user'@'%';
+FLUSH PRIVILEGES;
+SHOW MASTER STATUS;
+
+Note down the values for File and Position from the output.
+
+# On the Slave MariaDB server (192.168.122.161):
+Install MariaDB server if not already installed:
+
+sudo nano /etc/mysql/mariadb.conf.d/99-slave.cnf
+[mysqld]
+server-id=2
+sudo systemctl restart mariadb
+
+mariadb
+
+CHANGE MASTER TO MASTER_HOST='192.168.122.160', MASTER_USER='repl_user', MASTER_PASSWORD='repl_password', MASTER_LOG_FILE='mysql-bin.000001', MASTER_LOG_POS=<position>;
+START SLAVE;
+SHOW SLAVE STATUS\G
+
+
+-------------
+# ansible option
+---
+- name: Set up MariaDB master and slave replication
+  hosts: all
+  become: yes
+  vars:
+    master_ip: "192.168.0.XXX"  # Replace with your master server's IP
+    slave_ip: "192.168.0.130"    # Replace with your slave server's IP
+    replica_user: "replica_user"
+    replica_password: "your_password"
+
+  tasks:
+    - name: Install MariaDB on all servers
+      apt:
+        name: mariadb-server
+        state: present
+
+    - name: Ensure MariaDB is started and enabled
+      service:
+        name: mariadb
+        state: started
+        enabled: true
+
+- name: Configure the Master Server
+  hosts: master
+  become: yes
+  tasks:
+    - name: Configure MariaDB as master
+      lineinfile:
+        path: /etc/mysql/mariadb.conf.d/50-server.cnf
+        regexp: '^#?server-id'
+        line: 'server-id=1'
+        insertafter: '[mysqld]'
+      notify: Restart MariaDB
+
+    - name: Enable binary logging on master
+      lineinfile:
+        path: /etc/mysql/mariadb.conf.d/50-server.cnf
+        regexp: '^#?log_bin'
+        line: 'log_bin=mysql-bin'
+        insertafter: '[mysqld]'
+      notify: Restart MariaDB
+
+    - name: Create replication user on master
+      mysql_user:
+        name: "{{ replica_user }}"
+        host: "%"
+        password: "{{ replica_password }}"
+        priv: "*.*:REPLICATION SLAVE"
+        state: present
+
+    - name: Get master status
+      mysql_query:
+        login_user: root
+        query: "SHOW MASTER STATUS;"
+      register: master_status
+
+    - name: Save master status
+      set_fact:
+        master_log_file: "{{ master_status.query_result[0]['File'] }}"
+        master_log_pos: "{{ master_status.query_result[0]['Position'] }}"
+
+  handlers:
+    - name: Restart MariaDB
+      service:
+        name: mariadb
+        state: restarted
+
+- name: Configure the Slave Server
+  hosts: slave
+  become: yes
+  tasks:
+    - name: Configure MariaDB as slave
+      lineinfile:
+        path: /etc/mysql/mariadb.conf.d/50-server.cnf
+        regexp: '^#?server-id'
+        line: 'server-id=2'
+        insertafter: '[mysqld]'
+      notify: Restart MariaDB
+
+    - name: Enable relay logging on slave
+      lineinfile:
+        path: /etc/mysql/mariadb.conf.d/50-server.cnf
+        regexp: '^#?relay-log'
+        line: 'relay-log=relay-bin'
+        insertafter: '[mysqld]'
+      notify: Restart MariaDB
+
+    - name: Configure slave replication
+      mysql_replication:
+        mode: slave
+        master_host: "{{ master_ip }}"
+        master_user: "{{ replica_user }}"
+        master_password: "{{ replica_password }}"
+        master_log_file: "{{ hostvars['master'].master_log_file }}"
+        master_log_pos: "{{ hostvars['master'].master_log_pos }}"
+        state: present
+
+    - name: Start slave replication
+      mysql_replication:
+        mode: slave
+        state: started
+
+    - name: Set up cron job for syncing every 90 minutes
+      cron:
+        name: "Sync Slave with Master"
+        minute: "*/90"
+        job: "mysql -u root -e 'STOP SLAVE; START SLAVE;'"
+        state: present
+
+  handlers:
+    - name: Restart MariaDB
+      service:
+        name: mariadb
+        state: restarted
+
