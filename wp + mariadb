@@ -30,3 +30,11 @@ define( 'DB_NAME', 'wordpress' );
 define( 'DB_USER', 'wordpress_user' );
 define( 'DB_PASSWORD', 'your_strong_password' );
 define( 'DB_HOST', '192.168.122.160' );
+
+# reset password
+UPDATE wp_users SET user_pass = MD5('new_password') WHERE user_login = 'admin';
+USE bonbon;
+SHOW TABLES;
+SELECT * FROM products WHERE id = 1;
+SELECT name, price FROM products WHERE id = 1;
+
