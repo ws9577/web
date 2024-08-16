@@ -39,7 +39,7 @@ SHOW SLAVE STATUS\G
   hosts: all
   become: yes
   vars:
-    master_ip: "192.168.0.XXX"  # Replace with your master server's IP
+    master_ip: "192.168.0.201"  # Replace with your master server's IP
     slave_ip: "192.168.0.130"    # Replace with your slave server's IP
     replica_user: "replica_user"
     replica_password: "your_password"
