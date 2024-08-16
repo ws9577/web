@@ -149,3 +149,20 @@ SHOW SLAVE STATUS\G
         name: mariadb
         state: restarted
 
+# Create an Ansible inventory file hosts.ini that lists the master and slave servers.
+[master]
+192.168.0.201
+
+[slave]
+192.168.0.130
+
+Run the playbook from your control node:
+ansible-playbook -i hosts.ini setup_mariadb_replication.yml
+
+Check Replication Status
+mysql -u root -e "SHOW SLAVE STATUS\G;"
+
+monitor the cron job execution via syslog or cron logs to ensure it’s running every 90 minutes.
+
+
+
