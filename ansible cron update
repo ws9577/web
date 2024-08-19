@@ -1,0 +1,26 @@
+# build inventory
+sudo nano /etc/ansible/hosts
+
+[servers]
+192.168.0.[100:120]
+
+
+sudo nano update_servers_cron.yml
+
+---
+- name: Update all servers and set up cron job
+  hosts: servers
+  become: yes
+  tasks:
+    - name: Update and upgrade apt packages
+      apt:
+        update_cache: yes
+        upgrade: dist
+
+    - name: Ensure a cron job to update packages daily at midnight
+      ansible.builtin.cron:
+        name: "daily_update"
+        minute: "0"
+        hour: "0"
+        job: "ansible-playbook /path/to/update_servers_with_cron.yml"
+        user: root
