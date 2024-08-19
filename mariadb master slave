@@ -2,8 +2,9 @@
 nano /etc/mysql/mariadb.conf.d/99-master.cnf or nano /etc/mysql/mariadb.conf
 # Add the following lines to the file:
 [mysqld]
-log-bin=mysql-bin
+log-bin=mysql-bin # log_bin=/var/log/mysql/mysql-bin.log
 server-id=1
+binlog_do_db=your_database_name
 
 sudo systemctl restart mariadb
 
@@ -23,11 +24,20 @@ Install MariaDB server if not already installed:
 sudo nano /etc/mysql/mariadb.conf.d/99-slave.cnf
 [mysqld]
 server-id=2
+relay_log=/var/log/mysql/mysql-relay-bin.log
+log_bin=/var/log/mysql/mysql-bin.log
+binlog_do_db=your_database_name
+
+
 sudo systemctl restart mariadb
 
 mariadb
 
-CHANGE MASTER TO MASTER_HOST='192.168.122.160', MASTER_USER='repl_user', MASTER_PASSWORD='repl_password', MASTER_LOG_FILE='mysql-bin.000001', MASTER_LOG_POS=<position>;
+CHANGE MASTER TO MASTER_HOST='192.168.122.160',
+MASTER_USER='repl_user',
+MASTER_PASSWORD='repl_password',
+MASTER_LOG_FILE='mysql-bin.000001',
+MASTER_LOG_POS=<position>;
 START SLAVE;
 SHOW SLAVE STATUS\G
 
