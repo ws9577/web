@@ -1,0 +1,75 @@
+# html
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Image Gallery</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+</head>
+<body>
+
+<div class="w3-container">
+  <h2>Image Gallery</h2>
+  <div class="w3-row-padding">
+    <?php
+      $directory = '/www/image/';
+      $images = glob($directory . '*.{jpg,jpeg,png,gif}', GLOB_BRACE);
+      foreach ($images as $image) {
+        $imageUrl = str_replace($directory, '', $image);
+        echo '<div class="w3-third">';
+        echo '<a href="' . $image . '" target="_blank">';
+        echo '<img src="' . $image . '" style="width:100%">';
+        echo '</a>';
+        echo '</div>';
+      }
+    ?>
+  </div>
+</div>
+
+</body>
+</html>
+
+
+# java virsion
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Image Gallery</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+  <script>
+    window.onload = function() {
+      var directory = '/www/image/';
+      var imageContainer = document.getElementById('image-container');
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', directory, true);
+      xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4 && xhr.status === 200) {
+          var images = xhr.responseText.match(/href="([^"]+\.(jpg|jpeg|png|gif))"/g);
+          for (var i = 0; i < images.length; i++) {
+            var image = images[i].match(/href="([^"]+)"/)[1];
+            var imageUrl = image.replace(directory, '');
+            var imageElement = document.createElement('div');
+            imageElement.className = 'w3-third';
+            imageElement.innerHTML = '<a href="' + image + '" target="_blank"><img src="' + image + '" style="width:100%"></a>';
+            imageContainer.appendChild(imageElement);
+          }
+        }
+      };
+      xhr.send();
+    };
+  </script>
+</head>
+<body>
+
+<div class="w3-container">
+  <h2>Image Gallery</h2>
+  <div class="w3-row-padding" id="image-container">
+  </div>
+</div>
+
+</body>
+</html>
+
