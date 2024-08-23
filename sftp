@@ -21,7 +21,7 @@ sftp user@server_ip
 # linux client
 sftp username@server_address
 
-# windows client
+# windows client opt 1
 1. Download and install WinSCP or FileZilla from their respective websites.
 2. Launch the application.
 3. In WinSCP, click "New Site" and enter the server details (protocol, host name/IP, username, and password).
@@ -29,11 +29,26 @@ sftp username@server_address
 5. Connect to the SFTP server, and you should see the remote directory structure.
 6. You can now transfer files using drag-and-drop or the application's interface.
 
+# windows client opt 2
+sftp user@192.168.0.141
+cd /var/www/website/image
+put -r D:/www/img/book/*
+
 # iMac client
 sftp username@server_address
 
 
 ## rsync
+# Install WSL (Windows Subsystem for Linux) or use a third-party tool like Cygwin that provides rsync for Windows.
+wsl
+sudo apt-get update
+sudo apt-get install rsync
 # -a (archive mode): Preserves symbolic links, file permissions, user and group ownership, and modification times.
 rsync -avz /path/to/source/ user@remote_host:/path/to/destination/
+
+# If you're using SSH key authentication, add the -e ssh option:
+rsync -avz -e ssh /mnt/d/www/img/book/ user@192.168.0.141:/var/www/website/image/
+
+# If you want to delete files on the destination that don't exist in the source, add the --delete option:
+rsync -avz --delete -e ssh /mnt/d/www/img/book/ user@192.168.0.141:/var/www/website/image/
 
