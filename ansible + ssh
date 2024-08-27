@@ -6,6 +6,27 @@ ssh-keygen -t rsa -b 4096
 ssh-copy-id -i /root/.ssh/id_rsa.pub remote_user@192.168.0.100
 # Repeat this step for each host in the range, replacing the IP address accordingly.
 
+# Check for Existing SSH Keys:
+ls -l ~/.ssh/id_rsa ~/.ssh/id_rsa.pub
+
+# Alternatively, Check All Key Files:
+ls ~/.ssh/
+
+# Using Git Bash
+ls -l ~/.ssh/id_rsa ~/.ssh/id_rsa.pub
+
+# For Windows 
+ssh-keygen -t rsa -b 2048
+ssh-copy-id root@192.168.0.102
+
+# Windows
+dir $HOME\.ssh\id_rsa* 
+# If the files id_rsa (private key) and id_rsa.pub (public key) exist, then an SSH key pair is already present.
+
+
+
+
+
 # Configure Ansible inventory: In your Ansible inventory file (e.g., hosts or inventory), define the hosts within the specified range. You can use the IP address range notation like this:
 [webservers]
 192.168.0.100-110
