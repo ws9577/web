@@ -1,0 +1,74 @@
+# Add this code near the top of your wp-config.php file:
+define('WP_LOGIN_ATTEMPTS', 5);
+
+# Then, add this code to your theme's functions.php file:
+function check_attempted_login($user, $username, $password) {
+    if (get_transient('attempted_login')) {
+        $datas = get_transient('attempted_login');
+        if ($datas['tried'] >= WP_LOGIN_ATTEMPTS) {
+            $until = get_option('_transient_timeout_' . 'attempted_login');
+            $time = time_to_go($until);
+            return new WP_Error('too_many_tried', sprintf(__('<strong>ERROR</strong>: You have reached authentication limit, you will be able to try again in %1$s.'), $time));
+        }
+    }
+    return $user;
+}
+add_filter('authenticate', 'check_attempted_login', 30, 3);
+
+function login_failed($username) {
+    if (get_transient('attempted_login')) {
+        $datas = get_transient('attempted_login');
+        $datas['tried']++;
+        if ($datas['tried'] <= WP_LOGIN_ATTEMPTS)
+            set_transient('attempted_login', $datas, 300);
+    } else {
+        $datas = array(
+            'tried' => 1
+        );
+        set_transient('attempted_login', $datas, 300);
+    }
+}
+add_action('wp_login_failed', 'login_failed', 10, 1);
+
+function time_to_go($timestamp) {
+    $current = time();
+    $diff = $timestamp - $current;
+    $min = floor($diff / 60);
+    $sec = $diff - ($min * 60);
+    return sprintf('%d minutes and %d seconds', $min, $sec);
+}
+
+# Add these lines to your .htaccess file:
+<Files wp-login.php>
+    Order Deny,Allow
+    Deny from all
+    Allow from xxx.xxx.xxx.xxx
+</Files>
+
+# Moving wp-login.php to a custom URL:
+# Create a new PHP file (e.g., secret-login.php) in your WordPress root directory with this content:
+<?php
+require('wp-login.php');
+# Then add this to your wp-config.php:
+define('WP_ADMIN_DIR', 'wp-admin');
+define('ADMIN_COOKIE_PATH', SITECOOKIEPATH . WP_ADMIN_DIR);
+
+# And add this to your .htaccess:
+RewriteEngine On
+RewriteBase /
+RewriteRule ^wp-login\.php$ - [L]
+RewriteRule ^secret-login\.php$ wp-login.php [L]
+
+# automatically block IP addresses that make repeated unsuccessful or suspicious requests
+Fail2Ban
+
+# WP plugin
+Wordfence or Sucuri
+Implement File Integrity Monitoring: Tools like Tripwire or OSSEC
+
+# Scan for Other Potentially Malicious Files:
+# ClamAV or Maldet
+sudo apt-get install clamav
+sudo freshclam
+sudo clamscan -r /var/www/html
+
