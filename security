@@ -60,7 +60,26 @@ RewriteRule ^wp-login\.php$ - [L]
 RewriteRule ^secret-login\.php$ wp-login.php [L]
 
 # automatically block IP addresses that make repeated unsuccessful or suspicious requests
-Fail2Ban
+# Fail2Ban
+sudo apt-get install fail2ban  # For Debian-based systems
+sudo cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local
+
+#Configure SSH Protection: Edit /etc/fail2ban/jail.local to add or modify the SSH jail
+[sshd]
+enabled = true
+port = ssh
+filter = sshd
+logpath = /var/log/auth.log
+maxretry = 5
+bantime = 600
+
+sudo systemctl restart fail2ban
+sudo fail2ban-client status
+# Check Status of a Specific Jail:
+sudo fail2ban-client status sshd
+# Unban an IP Address:
+sudo fail2ban-client set sshd unbanip <IP_ADDRESS>
+
 
 # WP plugin
 Wordfence or Sucuri
