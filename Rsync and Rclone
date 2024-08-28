@@ -1,0 +1,20 @@
+rsync -avz --delete /root/backup/daily/ bucko@192.168.0.220:/root/backup/bonbon/daily
+# This command can be automated using cron jobs to perform regular backups.
+
+# Use Rclone for Cloud Storage
+rclone sync /path/to/source/ remote:/path/to/destination/
+
+# tar /var/www/bonbon
+tar -zcf buf-$(date+ %y%m%d).tar.gz -C /var/www/ bonbon # -C change directory
+tar -xzvf back.tar.gz
+
+# script buf.sh
+tar -zcf ~/buf/daily/buf-$(date= %y%m%d).tar.gz -C /var/www/ bonbon
+find ~/buf/daily/* mtime +15 -delete
+rsync -a --delete /root/buf/ bucko@192.168.0.150:~/buf/
+
+# automate
+crontab -e
+15 0 * * * sh /root/buf/buf.sh
+30 0 * * 1 sh /root/buf/buf-weekly.sh
+45 0 1 * * sh /root/buf/buf-monthly.sh
