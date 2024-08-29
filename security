@@ -91,3 +91,8 @@ sudo apt-get install clamav
 sudo freshclam
 sudo clamscan -r /var/www/html
 
+ps aux | grep freshclam
+sudo chown -R clamav:clamav /var/log/clamav
+sudo chmod -R 755 /var/log/clamav
+
+
