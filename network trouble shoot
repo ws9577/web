@@ -1,0 +1,56 @@
+# ping
+ping /? # all switches
+# timeout: server down or firewall blocking
+# pachage lost: conjection or hardware
+# Destination unreachable: remote server down, bad router or network
+# 
+
+ping 127.0.0.1 # check eth0
+
+
+## Apache
+# File Permissions and Ownership
+sudo chown -R www-data:www-data /path/to/your/web/root
+sudo find /path/to/your/web/root -type d -exec chmod 755 {} \;
+sudo find /path/to/your/web/root -type f -exec chmod 644 {} \;
+
+# Apache Configuration Files (e.g., 000-default.conf or your specific virtual host files)
+<Directory /var/www/html>
+    Options Indexes FollowSymLinks
+    AllowOverride None
+    Require all granted
+</Directory>
+
+# Check iptables Configuration
+sudo iptables -L -n -v
+sudo iptables -F
+
+# Check Fail2ban Configuration
+sudo fail2ban-client status
+
+# Check Apache Error Logs
+sudo tail -f /var/log/apache2/error.log
+
+## For nginx
+# Check Nginx Configuration, /etc/nginx/nginx.conf or /etc/nginx/sites-available/. Look for the proxy_pass, fastcgi_pass, uwsgi_pass
+server {
+    listen 80;
+    server_name example.com;
+
+    location / {
+        proxy_pass http://backend_server;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+
+# Check Nginx Logs
+sudo tail -f /var/log/nginx/error.log
+sudo tail -f /var/log/nginx/access.log
+
+
+
+
+
