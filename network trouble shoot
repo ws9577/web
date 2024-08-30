@@ -7,7 +7,6 @@ ping /? # all switches
 
 ping 127.0.0.1 # check eth0
 
-
 ## Apache
 # File Permissions and Ownership
 sudo chown -R www-data:www-data /path/to/your/web/root
@@ -45,6 +44,10 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
     }
 }
+
+
+## traceroute
+
 
 # Check Nginx Logs
 sudo tail -f /var/log/nginx/error.log
