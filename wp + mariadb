@@ -31,6 +31,18 @@ define( 'DB_USER', 'wordpress_user' );
 define( 'DB_PASSWORD', 'your_strong_password' );
 define( 'DB_HOST', '192.168.122.160' );
 
+# encrypt password
+# Technically, since WordPress is open source, you can just do something like this:
+define('DB_PASSWORD', '`cat /etc/wp_db_pass | base64 -d`');
+# to create a safer place for the WordPress password file. In this example I'm assuming you created the password like so:
+echo 'mypassword' | base64 > /etc/wp_db_pass
+
+# change password for a database
+ALTER USER 'user'@'localhost' IDENTIFIED BY 'new_password';
+FLUSH PRIVILEGES;
+exit
+
+
 # reset password
 UPDATE wp_users SET user_pass = MD5('new_password') WHERE user_login = 'admin';
 USE bonbon;
