@@ -11,14 +11,25 @@ sudo systemctl restart mariadb
 # Create a replication user and retrieve the master status:
 mariadb
 
-CREATE USER 'repl_user'@'%' IDENTIFIED BY 'repl_password';
+CREATE USER 'repl_user'@'%' IDENTIFIED BY 'repl_password'; # % = wildcard
 GRANT REPLICATION SLAVE ON *.* TO 'repl_user'@'%';
 FLUSH PRIVILEGES;
 SHOW MASTER STATUS;
 
-Note down the values for File and Position from the output.
+# multi slave
+CREATE USER 'replica_user'@'192.168.0.131' IDENTIFIED BY 'shared_password';
+CREATE USER 'replica_user'@'192.168.0.132' IDENTIFIED BY 'shared_password';
+CREATE USER 'replica_user'@'192.168.0.133' IDENTIFIED BY 'shared_password';
 
-# On the Slave MariaDB server (192.168.122.161):
+GRANT REPLICATION SLAVE ON *.* TO 'replica_user1'@'192.168.0.131';
+GRANT REPLICATION SLAVE ON *.* TO 'replica_user2'@'192.168.0.132';
+GRANT REPLICATION SLAVE ON *.* TO 'replica_user3'@'192.168.0.133';
+FLUSH PRIVILEGES;
+
+
+# Note down the values for File and Position from the output.
+
+## On the Slave MariaDB server (192.168.122.161):
 Install MariaDB server if not already installed:
 
 sudo nano /etc/mysql/mariadb.conf.d/99-slave.cnf
