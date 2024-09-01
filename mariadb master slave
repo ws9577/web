@@ -6,6 +6,10 @@ log-bin=mysql-bin # log_bin=/var/log/mysql/mysql-bin.log
 server-id=1
 binlog_do_db=your_database_name
 
+# Optional: Increase performance
+sync_binlog = 1
+innodb_flush_log_at_trx_commit = 1
+
 sudo systemctl restart mariadb
 
 # Create a replication user and retrieve the master status:
@@ -14,6 +18,7 @@ mariadb
 CREATE USER 'repl_user'@'%' IDENTIFIED BY 'repl_password'; # % = wildcard
 GRANT REPLICATION SLAVE ON *.* TO 'repl_user'@'%';
 FLUSH PRIVILEGES;
+FLUSH TABLES WITH READ LOCK;
 SHOW MASTER STATUS;
 
 # multi slave
@@ -25,7 +30,8 @@ GRANT REPLICATION SLAVE ON *.* TO 'replica_user1'@'192.168.0.131';
 GRANT REPLICATION SLAVE ON *.* TO 'replica_user2'@'192.168.0.132';
 GRANT REPLICATION SLAVE ON *.* TO 'replica_user3'@'192.168.0.133';
 FLUSH PRIVILEGES;
-
+FLUSH TABLES WITH READ LOCK;
+SHOW MASTER STATUS;
 
 # Note down the values for File and Position from the output.
 
@@ -40,10 +46,11 @@ log_bin=/var/log/mysql/mysql-bin.log
 binlog_do_db=your_database_name
 
 
+
 sudo systemctl restart mariadb
 
 mariadb
-
+STOP SLAVE;
 CHANGE MASTER TO MASTER_HOST='192.168.122.160',
 MASTER_USER='repl_user',
 MASTER_PASSWORD='repl_password',
@@ -52,6 +59,9 @@ MASTER_LOG_POS=<position>;
 START SLAVE;
 SHOW SLAVE STATUS\G
 
+# Look for:
+Slave_IO_Running: Yes
+Slave_SQL_Running: Yes
 
 -------------
 # ansible option
