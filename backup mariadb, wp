@@ -1,0 +1,55 @@
+
+# Logical backups (e.g. mariadb-dump) are portable across database systems but slower and result in larger backup files.
+# Physical backups (e.g. mariadb-backup) are faster, support incremental backups, and lock tables for less time, but are less portable.
+# Physical backups with mariadb-backup are the recommended method for MariaDB due to the speed and extra features
+# mairabu.sh
+mysqldump --all-databases --single-transaction --quick --lock-tables=false \
+  --routines --events --triggers \
+  --user=root --password=your_password \
+  | gzip > /path/to/backup/mariadb_backup_$(date +\%Y\%m\%d_\%H\%M\%S).sql.gz
+
+＃ physical
+mariabackup --backup --target-dir=/path/to/backup/dir --user=root --password=your_password
+
+# crontab
+0 2 * * * /path/to/your/backup_script.sh
+
+# rotation script
+#!/bin/bash
+
+BACKUP_DIR="/path/to/backup"
+DAILY_DIR="$BACKUP_DIR/daily"
+WEEKLY_DIR="$BACKUP_DIR/weekly"
+MONTHLY_DIR="$BACKUP_DIR/monthly"
+
+# Create backup directories if they don't exist
+mkdir -p $DAILY_DIR $WEEKLY_DIR $MONTHLY_DIR
+
+# Perform the backup (adjust this to your preferred method)
+mysqldump --all-databases | gzip > "$DAILY_DIR/backup_$(date +\%Y\%m\%d).sql.gz"
+
+# Rotate daily backups (keep last 7 days)
+find $DAILY_DIR -type f -mtime +7 -delete
+
+# Weekly backup (on Sundays)
+if [ $(date +\%u) -eq 7 ]; then
+    cp "$DAILY_DIR/backup_$(date +\%Y\%m\%d).sql.gz" "$WEEKLY_DIR/"
+    # Keep last 4 weekly backups
+    find $WEEKLY_DIR -type f -mtime +28 -delete
+fi
+
+# Monthly backup (on the 1st of each month)
+if [ $(date +\%d) -eq 01 ]; then
+    cp "$DAILY_DIR/backup_$(date +\%Y\%m\%d).sql.gz" "$MONTHLY_DIR/"
+    # Keep last 12 monthly backups
+    find $MONTHLY_DIR -type f -mtime +365 -delete
+fi
+
+------------------------------
+[mysqld]
+log-bin = mysql-bin
+expire_logs_days = 14
+
+
+
+
