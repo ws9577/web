@@ -87,9 +87,18 @@ sudo nano /etc/fail2ban/filter.d/wordpress.conf
 failregex = ^<HOST>.*"POST .*wp-login.php
 ignoreregex =
 
+
+# Preserving Client IPs Using Reverse Proxy Configuration:
+# To help the backend server identify the original client's IP address, you should configure the reverse proxy to pass the original IP. This is done using headers like X-Forwarded-For or X-Real-IP.
+# For Nginx: Add or ensure the following directive is present in your Nginx configuration:
+proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+proxy_set_header X-Real-IP $remote_addr;
+
+
 # backend log format
 @ apache, /etc/apache2/apache2.conf, or sites-enabled
 LogFormat "%{X-Forwarded-For}i %l %u %t \"%r\" %>s %b" forwarded_combined
+ErrorLog ${APACHE_LOG_DIR}/error.log
 CustomLog /var/log/apache2/access.log forwarded_combined
 # nginx, /etc/nginx/nginx.conf
 log_format main '$proxy_add_x_forwarded_for - $remote_user [$time_local] "$request" '
