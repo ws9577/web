@@ -5,8 +5,11 @@ rsync -avz --delete /root/backup/daily/ bucko@192.168.0.220:/root/backup/bonbon/
 rclone sync /path/to/source/ remote:/path/to/destination/
 
 # tar /var/www/bonbon
-tar -zcf buf-$(date+ %y%m%d).tar.gz -C /var/www/ bonbon # -C change directory
-tar -xzvf back.tar.gz
+tar -cvf /temp/buf/web/bonbon_$(date +%Y%m%d) /mnt/web/bonbon
+# /temp/buf/web/bonbon_$(date +%Y-%m-%d).tar: This is the path and filename for the archive. The $(date +%Y%m%d) part dynamically generates.
+# /mnt/web/bonbon: This is the directory you want to archive.
+## tar -zcf buf-$(date+ %y%m%d).tar.gz -C /var/www/ bonbon # -C change directory
+tar -xvf back.tar.gz
 
 # script buf.sh
 tar -zcf ~/buf/daily/buf-$(date= %y%m%d).tar.gz -C /var/www/ bonbon
