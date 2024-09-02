@@ -1,3 +1,6 @@
+# alpine
+apk add iptables2 drill imunifyAV ./wordfence.deb
+
 ## Claude
 # Flush existing rules
 iptables -F
