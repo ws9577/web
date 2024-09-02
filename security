@@ -1,3 +1,13 @@
+# Check for Rootkits and Malware
+sudo apt install chkrootkit rkhunter
+sudo chkrootkit
+sudo rkhunter --checkall
+
+# Verify Package Integrity
+sudo apt install debsums
+sudo debsums -c
+
+
 # https://www.wordfence.com/docs/how-to-clean-a-hacked-wordpress-site-using-wordfence/
 
 # all files that were modified during the last 2 days
