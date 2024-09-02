@@ -1,3 +1,26 @@
+# https://www.wordfence.com/docs/how-to-clean-a-hacked-wordpress-site-using-wordfence/
+
+# all files that were modified during the last 2 days
+find . -mtime -2 -ls
+# Or you can specify a specific directory:
+find /home/yourdirectory/yoursite/ -mtime -2 -ls
+# Or you can change the search to show files modified in the last 10 days:
+find /home/yourdirectory/yoursite/ -mtime -10 -ls
+
+# Another useful tool in SSH is ‘grep’. For example, to search for files that reference base64 encoding(commonly used by hackers) you can run the following command:
+grep -ril base64 *
+# This will just list the file names. You can omit the ‘l’ option to see the actual contents of the file where the base64 string occurs:
+grep -ri base64 *
+# Keep in mind that “base64” can occur in legitimate code as well. Before you delete anything, you’ll want to make sure that you are not deleting a file that is being used by a theme or plugin on your site. A more refined search could look like this:
+grep --include=*.php -rn . -e "base64_decode"
+# This command will dig through all directories and subdirectories looking for files that end in .php and search them for the text string “base64_decode” and will print any results it finds including the line number so that you can easily find where it occurs in each file.
+# Now that you know how to use ‘grep’, we recommend that you use grep in combination with ‘find’. What you should do is find files that were recently modified, see what was modified in the file and if you find a common string of text like “bad hacker was here” then you can just grep all your files for that text like so:
+grep -irl "bad hacker was here" *
+
+# Determine which script is performing the malicious redirect. Not all javascript on your site is malicious, in fact, most of the javascript you will find on your site is a part of core functionality.
+# In Chrome, enter “view-source:” in front of the site’s URL (e.g., view-source:https://www.sitename.com) and search for “<script” within the file. You can look for what other code or text is close to the malicious script to determine which site file contains the malicious code.
+# If it is a theme file, you can use your site’s theme editor to remove the offending javascript. Or you can download your site via FTP or your cpanel file manager and upload the cleaned file back to your server.
+
 # Block specific domains associated with attacks
 # website’s server configuration files (e.g., .htaccess for Apache servers)
 <Limit GET HEAD POST>
@@ -6,6 +29,14 @@
     deny from 123.45.6.7
     deny from 123.45.6.0/24
 </Limit>
+
+# wordfence cli
+apt install ./wordfence.deb
+wp wordfence scan
+wp wordfence scan report
+wp wordfence update
+wp wordfence repair
+
 
 # Add this code near the top of your wp-config.php file:
 define('WP_LOGIN_ATTEMPTS', 5);
