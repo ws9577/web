@@ -1,3 +1,12 @@
+# Block specific domains associated with attacks
+# website’s server configuration files (e.g., .htaccess for Apache servers)
+<Limit GET HEAD POST>
+    order allow,deny
+    allow from all
+    deny from 123.45.6.7
+    deny from 123.45.6.0/24
+</Limit>
+
 # Add this code near the top of your wp-config.php file:
 define('WP_LOGIN_ATTEMPTS', 5);
 
