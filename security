@@ -130,6 +130,33 @@ logpath = /var/log/auth.log
 maxretry = 3
 bantime = 3600
 
+------------------------------------
+# Install and Secure PHP
+sudo apt install php php-fpm php-mysql php-cli php-curl php-gd php-xml php-mbstring -y
+
+# Secure PHP Configuration: Edit the /etc/php/X.X/fpm/php.ini 
+expose_php = Off
+memory_limit = 256M
+post_max_size = 64M
+upload_max_filesize = 64M
+max_execution_time = 300
+max_input_time = 1000
+display_errors = Off
+
+---------------------------
+# WordPress Hardening
+Security Keys: Generate and set unique security keys in wp-config.php from the WordPress secret key generator.
+
+# Secure critical WordPress files and directories
+sudo find /var/www/html/wordpress/ -type d -exec chmod 755 {} \;
+sudo find /var/www/html/wordpress/ -type f -exec chmod 644 {} \;
+sudo chmod 600 /var/www/html/wordpress/wp-config.php
+
+# Disable File Editing in WordPress: Add this to wp-config.php 
+define('DISALLOW_FILE_EDIT', true);
+
+-------------------------------------
+
 # Create a custom filter for WordPress
 sudo nano /etc/fail2ban/filter.d/wordpress.conf
 # Add this content:
