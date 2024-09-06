@@ -12,7 +12,20 @@ apk info -a | grep su
 # Verify the file’s integrity:
 apk verify coreutils
 
+# Create a copy for analysis
+sudo cp /usr/bin/[filename] /tmp/[filename]_infected
 
+# Compare with the original package
+dpkg -S /usr/bin/[filename]  # or rpm -qf for RPM systems
+apt-get download [package_name]  # or yumdownloader for RPM systems
+dpkg-deb -x [package_file.deb] clean_files/
+diff -s /usr/bin/[filename] clean_files/usr/bin/[filename]
+
+# Analyze differences
+hexdump -C /usr/bin/[filename] > /tmp/[filename]_infected.hex
+hexdump -C clean_files/usr/bin/[filename] > /tmp/[filename]_clean.hex
+diff /tmp/[filename]_infected.hex /tmp/[filename]_clean.hex
+--------------------------
 
 # https://www.wordfence.com/docs/how-to-clean-a-hacked-wordpress-site-using-wordfence/
 
