@@ -53,6 +53,13 @@ wp wordfence scan report
 wp wordfence update
 wp wordfence repair
 
+# If a rootkit is confirmed, it’s highly recommended to reinstall the operating system.
+# Format the compromised server, reinstall the OS, and restore data from a clean backup.
+# If reinstallation is not immediately feasible, try restoring system binaries from known good sources:
+sudo apt-get --reinstall install coreutils
+sudo apt-get --reinstall install shadow
+
+
 
 # Add this code near the top of your wp-config.php file:
 define('WP_LOGIN_ATTEMPTS', 5);
