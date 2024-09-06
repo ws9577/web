@@ -7,6 +7,12 @@ sudo rkhunter --checkall
 sudo apt install debsums
 sudo debsums -c
 
+# Check update history: 
+apk info -a | grep su
+# Verify the file’s integrity:
+apk verify coreutils
+
+
 
 # https://www.wordfence.com/docs/how-to-clean-a-hacked-wordpress-site-using-wordfence/
 
