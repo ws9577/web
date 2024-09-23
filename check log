@@ -1,0 +1,29 @@
+#!/bin/bash
+
+echo "Performing basic security checks..."
+
+# Check for failed login attempts
+echo "Recent failed login attempts:"
+grep "Failed password" /var/log/auth.log | tail -n 5
+
+# Check for successful logins
+echo "Recent successful logins:"
+last | head -n 5
+
+# Check for processes running as root
+echo "Processes running as root:"
+ps -ef | grep root | grep -v grep | grep -v "\[" | head -n 5
+
+# Check for open ports
+echo "Open ports:"
+ss -tuln | grep LISTEN | head -n 5
+
+# Check for large files in /tmp
+echo "Large files in /tmp:"
+find /tmp -type f -size +100M -exec ls -lh {} \; 2>/dev/null | head -n 5
+
+# Check for recently modified system files
+echo "Recently modified system files:"
+find /etc -type f -mtime -7 -ls 2>/dev/null | head -n 5
+
+echo "Basic security check complete. Please review the output carefully."
