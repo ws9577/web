@@ -1,5 +1,7 @@
 apt install certbot python3-certbot-nginx
 
+apk add certbot certbot-nginx # alpine
+
 sudo certbot --nginx -d bonbon.win -d www.bonbon.win
 
 # nginx
