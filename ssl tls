@@ -72,6 +72,14 @@ if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROT
     $_SERVER['HTTPS'] = 'on';
 }
 
+# .htaccess, add:
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteCond %{HTTPS} !=on
+RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+</IfModule>
+
+
 # Sync SSL Certificates to Redundant Proxy
 
 scp /etc/letsencrypt/live/bonbon..win/fullchain.pem bucko@192.168.0.103:/etc/letsencrypt/live/bonbon.win/
