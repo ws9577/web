@@ -65,12 +65,21 @@ sudo crontab -e
 </VirtualHost>
 
 # In your WordPress configuration (wp-config.php), add these lines:
+define('FORCE_SSL_ADMIN', true); # new add
 define('WP_HOME', 'https://bonbon.win');
 define('WP_SITEURL', 'https://bonbon.win');
 
 if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') {
     $_SERVER['HTTPS'] = 'on';
 }
+# or option 2
+if (strpos($_SERVER['HTTP_X_FORWARDED_PROTO'], 'https') !== false)
+    $_SERVER['HTTPS']='on';
+
+# mariadb side
+UPDATE wp_options SET option_value = replace(option_value, 'http://bonbon.win', 'https://bonbon.win') WHERE option_name = 'home' OR option_name = 'siteurl';
+UPDATE wp_posts SET guid = replace(guid, 'http://bonbon.win', 'https://bonbon.win');
+UPDATE wp_posts SET post_content = replace(post_content, 'http://bonbon.win', 'https://bonbon.win');
 
 # .htaccess, add:
 <IfModule mod_rewrite.c>
