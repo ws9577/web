@@ -32,7 +32,7 @@ define( 'DB_PASSWORD', 'your_strong_password' );
 define( 'DB_HOST', '192.168.122.160' );
 
 # multi site: 
-define('WP_ALLOW_MULTISITE', true)
+define('WP_ALLOW_MULTISITE', true);
 
 # encrypt password
 # Technically, since WordPress is open source, you can just do something like this:
