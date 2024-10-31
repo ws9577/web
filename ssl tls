@@ -94,3 +94,27 @@ RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 scp /etc/letsencrypt/live/bonbon..win/fullchain.pem bucko@192.168.0.103:/etc/letsencrypt/live/bonbon.win/
 scp /etc/letsencrypt/live/bonbon.win/privkey.pem bucko@192.168.0.103:/etc/letsencrypt/live/bonbon.win/
 # setup config
+
+-----------------------------------
+HTTPS not working, only work with http://:
+The fact that it works with http:// but not https:// suggests that there might be an issue with your SSL configuration or the way WordPress is handling the HTTPS requests.
+Nginx reverse proxy + SSL:
+Since you're using Nginx as a reverse proxy with SSL, we need to ensure that the HTTPS requests are properly forwarded to WordPress.
+
+Here are some steps to troubleshoot and potentially fix the issue:
+
+# WordPress Configuration:
+# In your wp-config.php file, add these lines to force WordPress to use HTTPS:
+define('FORCE_SSL_ADMIN', true);
+define('WP_HOME','https://bonbon.win');
+define('WP_SITEURL','https://bonbon.win');
+
+if (strpos($_SERVER['HTTP_X_FORWARDED_PROTO'], 'https') !== false)
+    $_SERVER['HTTPS']='on';
+# The last two lines help WordPress detect that it's behind a reverse proxy using HTTPS.
+
+# Debug:
+# If the issue persists, enable WordPress debug mode by adding this to wp-config.php:
+define('WP_DEBUG', true);
+define('WP_DEBUG_LOG', true);
+
