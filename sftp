@@ -7,6 +7,7 @@ nano /etc/ssh/sshd_config
   PermitRootLogin no (Disallow root login over SSH for security reasons)
   PasswordAuthentication yes (Allow password-based authentication, or change to no to use key-based authentication only)
   Subsystem sftp /usr/lib/openssh/sftp-server (Enables the SFTP subsystem)
+  Subsystem sftp /usr/lib/ssh/sftp-server # might be this ssh dir
   After making changes, save and exit the file.
 
 systemctl restart sshd
