@@ -73,3 +73,30 @@
 </body>
 </html>
 
+-------------------------
+# create grip.sh (ash in alpine)
+#!/bin/ash
+
+# Navigate to the images directory (replace with your actual path)
+cd /path/to/your/images
+
+# Start the JSON array
+echo "[" > list.json
+
+first=true
+
+# Loop through all image files in the directory
+for file in *.jpg *.png *.jpeg *.gif; do
+    if $first; then
+        echo "\"images/$file\"" >> list.json
+        first=false
+    else
+        echo ",\"images/$file\"" >> list.json
+    fi
+done
+
+# Close the JSON array
+echo "]" >> list.json
+
+---------------------------------
+
