@@ -1,80 +1,45 @@
 # html
 
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Image Gallery</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
-</head>
-<body>
-
-<div class="w3-container">
-  <h2>Image Gallery</h2>
-  <div class="w3-row-padding">
-    <?php
-      $directory = '/www/image/';
-      $images = glob($directory . '*.{jpg,jpeg,png,gif}', GLOB_BRACE);
-      foreach ($images as $image) {
-        $imageUrl = str_replace($directory, '', $image);
-        echo '<div class="w3-third">';
-        echo '<a href="' . $image . '" target="_blank">';
-        echo '<img src="' . $image . '" style="width:100%">';
-        echo '</a>';
-        echo '</div>';
-      }
-    ?>
-  </div>
-</div>
-
-</body>
-</html>
-
-
-# java virsion
-
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Image Gallery</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
-  <script>
-    window.onload = function() {
-      var directory = '/www/image/';
-      var imageContainer = document.getElementById('image-container');
-      var xhr = new XMLHttpRequest();
-      xhr.open('GET', directory, true);
-      xhr.onreadystatechange = function() {
-        if (xhr.readyState === 4 && xhr.status === 200) {
-          var images = xhr.responseText.match(/href="([^"]+\.(jpg|jpeg|png|gif))"/g);
-          for (var i = 0; i < images.length; i++) {
-            var image = images[i].match(/href="([^"]+)"/)[1];
-            var imageUrl = image.replace(directory, '');
-            var imageElement = document.createElement('div');
-            imageElement.className = 'w3-third';
-            imageElement.innerHTML = '<a href="' + image + '" target="_blank"><img src="' + image + '" style="width:100%"></a>';
-            imageContainer.appendChild(imageElement);
-          }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Gallery</title>
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <style>
+        .gallery img {
+            width: 100%;
+            height: auto;
         }
-      };
-      xhr.send();
-    };
-  </script>
+        .gallery {
+            display: flex;
+            flex-wrap: wrap;
+        }
+        .gallery-item {
+            flex: 1 1 200px;
+            margin: 5px;
+        }
+    </style>
 </head>
 <body>
 
 <div class="w3-container">
-  <h2>Image Gallery</h2>
-  <div class="w3-row-padding" id="image-container">
-  </div>
+    <h2 class="w3-center">Image Gallery</h2>
+    <div id="gallery" class="gallery w3-row-padding">
+        <!-- Images will be loaded here -->
+    </div>
 </div>
+
+<script src="gallery.js"></script>
+
 
 </body>
 </html>
 
 -------------------------
-# create grip.sh (ash in alpine)
+# create list.json with grip.sh (ash in alpine) 
+
 #!/bin/ash
 
 # Navigate to the images directory (replace with your actual path)
@@ -99,4 +64,53 @@ done
 echo "]" >> list.json
 
 ---------------------------------
+# external js
+# gallery.js
+
+document.addEventListener("DOMContentLoaded", function() {
+    const gallery = document.getElementById('gallery');
+    
+    fetch('list.json')
+        .then(response => response.json())
+        .then(images => {
+            images.forEach(function(image) {
+                const div = document.createElement('div');
+                div.classList.add('gallery-item', 'w3-col', 'm4');
+                div.innerHTML = `
+                    <a href="${image}" target="_blank">
+                        <img src="${image}" alt="Image" class="w3-hover-opacity">
+                    </a>
+                `;
+                gallery.appendChild(div);
+            });
+        })
+        .catch(error => {
+            console.error('Error loading image list:', error);
+        });
+});
+
+-------------------------
+# The Content Security Policy (CSP) on your Nginx server is preventing the inline JavaScript from executing. 
+# /sites-enabled/site
+# Security headers
+    add_header X-Frame-Options SAMEORIGIN;
+    add_header X-Content-Type-Options nosniff;
+    add_header X-XSS-Protection "1; mode=block";
+    add_header Content-Security-Policy "
+        default-src 'self';
+        img-src 'self' data:;
+        script-src 'self';
+        style-src 'self';
+    ";
+
+location / {
+        try_files $uri $uri/ /index.php?$args;
+        autoindex on;
+        autoindex_format json;
+        add_header Access-Control-Allow-Origin *;
+    }
+
+# Autoindex JSON: This setting will allow you to retrieve a JSON listing of directory contents, which can simplify dynamically loading files (like images) in your frontend code.
+# Cross-Origin Resource Sharing (CORS): Setting Access-Control-Allow-Origin * allows any origin to access resources, 
+# which is helpful if you need resources to be accessible across different domains (though be cautious with this setting in production).
 
