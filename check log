@@ -27,3 +27,6 @@ echo "Recently modified system files:"
 find /etc -type f -mtime -7 -ls 2>/dev/null | head -n 5
 
 echo "Basic security check complete. Please review the output carefully."
+
+sudo tail -f /var/log/syslog
+sudo less /var/log/auth.log
