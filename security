@@ -114,28 +114,6 @@ function time_to_go($timestamp) {
     return sprintf('%d minutes and %d seconds', $min, $sec);
 }
 
-# Add these lines to your .htaccess file:
-<Files wp-login.php>
-    Order Deny,Allow
-    Deny from all
-    Allow from xxx.xxx.xxx.xxx
-</Files>
-
-# Moving wp-login.php to a custom URL:
-# Create a new PHP file (e.g., secret-login.php) in your WordPress root directory with this content:
-<?php
-require('wp-login.php');
-?>
-
-# Then add this to your wp-config.php:
-define('WP_ADMIN_DIR', 'wp-admin');
-define('ADMIN_COOKIE_PATH', SITECOOKIEPATH . WP_ADMIN_DIR);
-
-# And add this to your .htaccess:
-RewriteEngine On
-RewriteBase /
-RewriteRule ^wp-login\.php$ - [L]
-RewriteRule ^secret-login\.php$ wp-login.php [L]
 
 # automatically block IP addresses that make repeated unsuccessful or suspicious requests
 # Fail2Ban
