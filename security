@@ -125,6 +125,8 @@ function time_to_go($timestamp) {
 # Create a new PHP file (e.g., secret-login.php) in your WordPress root directory with this content:
 <?php
 require('wp-login.php');
+?>
+
 # Then add this to your wp-config.php:
 define('WP_ADMIN_DIR', 'wp-admin');
 define('ADMIN_COOKIE_PATH', SITECOOKIEPATH . WP_ADMIN_DIR);
