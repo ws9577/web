@@ -12,6 +12,17 @@ apk info -a | grep su
 # Verify the file’s integrity:
 apk verify coreutils
 
+# grep hostile act
+grep "Failed password" /var/log/auth.log
+grep "Invalid user" /var/log/auth.log
+grep "user unknown" /var/log/auth.log
+grep "authentication failure" /var/log/auth.log
+grep "Connection closed by authenticating user" /var/log/auth.log
+grep sshd /var/log/auth.log
+grep -E "(Failed password|Invalid user|authentication failure)" /var/log/auth.log
+tail -f /var/log/auth.log | grep -E "(Failed password|Invalid user|authentication failure)"
+
+
 # Create a copy for analysis
 sudo cp /usr/bin/[filename] /tmp/[filename]_infected
 
