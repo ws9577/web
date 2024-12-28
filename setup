@@ -1,0 +1,73 @@
+
+ubupi:        102
+  raspberry pi 4
+  ubuntu
+    nginx
+    iptables
+    
+aiprox1:      104
+  alpine
+  nginx
+    bonbon.win
+    zone1.bonbon.win
+    med.bonbon.win
+
+smurf:        110, 111
+  ubuntu
+  qemu kvm, virsh
+
+AllTimeSlow:  112
+  win10
+  
+SeanLap:      113
+  lap top ASUS
+  win11
+
+ubapbb1:      130
+  ubuntu
+    apache
+    wordpress
+      bonbon.win
+        /var/www/bb/
+      zone1.bonbon.win (dev)
+        /var/www/bonbon/
+    mariadb
+      zone1.bonbon.win
+    iptables
+    fail2ban
+    rkhunter
+    
+ubapbb2:      131
+  ubuntu
+    apache
+    wordpress
+
+alngmed1:     140
+  alpine
+    nginx
+      /var/www/bonbon/
+
+ubdev1:       150
+  ubuntu
+    desktop
+    ansible
+    gimp
+
+kali:         160
+  ubuntu
+    nmap
+    wpscan
+    
+
+almar1:       180
+  alpine
+    mariadb, mariadb-client
+      bonbon.win
+
+ubbk1:        200
+  ubuntu
+    apache
+
+ubbk2:        201
+  ubuntu
+    
