@@ -15,9 +15,11 @@ aiprox1:      104
 smurf:        110, 111
   ubuntu
   qemu kvm, virsh
+    ssh.pub: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJM2py09BekqiaaMTeLuOO1DY4A82+de5AVIblU/8GpP root@smurf 
 
 AllTimeSlow:  112
   win10
+    ssh.pub: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJ6q+nZIKo5uNMTtjs1BT7mW27iFFzcxuYhpz9AXRixj user@AllTimeSlow
   
 SeanLap:      113
   lap top ASUS
