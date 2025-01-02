@@ -30,11 +30,14 @@ ubapbb1:      130
     apache
     wordpress
       bonbon.win
-        /var/www/bb/
+        /var/www/bb1/
+        mariadb: bonbon bb_bucko@192.168.0.180
+          wordfence, 2fa, 
       zone1.bonbon.win (dev)
         /var/www/bonbon/
-    mariadb
-      zone1.bonbon.win
+        mariadb: bonbon bucko@192.168.0.130(local)
+          wordfence, 2fa, woocommerce
+
     iptables
     fail2ban
     rkhunter
