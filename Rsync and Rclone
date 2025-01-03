@@ -9,6 +9,8 @@ tar -cvf /temp/buf/web/bonbon_$(date +%Y%m%d) /mnt/web/bonbon
 # /temp/buf/web/bonbon_$(date +%Y-%m-%d).tar: This is the path and filename for the archive. The $(date +%Y%m%d) part dynamically generates.
 # /mnt/web/bonbon: This is the directory you want to archive.
 ## tar -zcf buf-$(date+ %y%m%d).tar.gz -C /var/www/ bonbon # -C change directory
+tar -zcf /home/bucko/buf/bb1/bonbon_$(date +%Y%m%d).tar.gz -C /var/www/ bb1
+
 tar -xvf back.tar.gz
 
 # script buf.sh
