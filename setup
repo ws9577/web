@@ -27,7 +27,9 @@ SeanLap:      113
 
 ubapbb1:      130
   ubuntu
+    ssh.pub: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKat077nV9qV8DLtVA8jm6vSZwzi0xCNlZJgID84AFqx root@ubapbb1
     apache
+    mariadb-server, mariadb-client
     wordpress
       bonbon.win
         /var/www/bb1/
@@ -37,6 +39,9 @@ ubapbb1:      130
         /var/www/bonbon/
         mariadb: bonbon bucko@192.168.0.130(local)
           wordfence, 2fa, woocommerce
+    backup: /home/bucko/buf/bb1 mariadb buweb.sh
+      ubbk1: /home/bucko/buf/bb1 mariadb
+      ubbk2: /home/bucko/buf/bb1 mariadb
 
     iptables
     fail2ban
@@ -66,13 +71,24 @@ kali:         160
 
 almar1:       180
   alpine
+    ssh.pub: 
     mariadb, mariadb-client
       bonbon.win
+    backup: /var/log/backup/all_db_20xx-01-01.sql backupdb.sh
+      ubbk1: /home/bucko/buf/bb1 mariadb
+      ubbk2: /home/bucko/buf/bb1 mariadb
+
+
 
 ubbk1:        200
   ubuntu
     apache
+    mariadb-server, mariadb-client
+      ubbk1: /home/bucko/buf/bb1 mariadb
+      
 
 ubbk2:        201
   ubuntu
+    mariadb-server, mariadb-client
+      ubbk2: /home/bucko/buf/bb1 mariadb
     
