@@ -1,0 +1,273 @@
+# front end nginx
+# /etc/nginx/sites-enable/cloud.conf
+server {
+    listen 80;
+    server_name cloud.bonbon.win;
+    
+    # Redirect HTTP to HTTPS
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    server_name cloud.bonbon.win;
+    
+    ssl_certificate /etc/nginx/ssl/cloud.crt;
+    ssl_certificate_key /etc/nginx/ssl/cloud.key;
+    
+    # Proxy to your NextCloud VM
+    location / {
+        proxy_pass http://192.168.1.141;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        
+        # WebDAV and other required settings
+        client_max_body_size 10G;
+        proxy_request_buffering off;
+    }
+}
+
+------------------------------------
+# on alpine vm
+# Install NextCloud dependencies
+apk update
+apk add apache2 php8 php8-gd php8-curl php8-xml php8-zip php8-dom php8-mbstring php8-intl php8-pecl-imagick php8-pdo_mysql
+
+# Download and setup NextCloud
+cd /var/www/html
+wget https://download.nextcloud.com/server/releases/latest.zip
+unzip latest.zip
+chown -R apache:apache nextcloud/
+
+
+# Configure Apache to serve NextCloud:
+# apache /etc/apache2/conf.d/nextcloud.conf
+Alias /nextcloud "/var/www/html/nextcloud/"
+
+<Directory /var/www/html/nextcloud/>
+  Options +FollowSymlinks
+  AllowOverride All
+  Require all granted
+  
+  <IfModule mod_dav.c>
+    Dav off
+  </IfModule>
+  
+  SetEnv HOME /var/www/html/nextcloud
+  SetEnv HTTP_HOME /var/www/html/nextcloud
+</Directory>
+
+# On your MariaDB VM:
+# bash # Create NextCloud database and user
+mysql -u root -p
+
+CREATE DATABASE nextcloud;
+CREATE USER 'nextcloud'@'%' IDENTIFIED BY 'strong_password_here';
+GRANT ALL PRIVILEGES ON nextcloud.* TO 'nextcloud'@'%';
+FLUSH PRIVILEGES;
+EXIT;
+
+# Make sure to configure MariaDB to listen on the VM's network interface:
+# ini# /etc/my.cnf.d/mariadb-server.cnf
+[mysqld]
+bind-address = 0.0.0.0
+
+# iptables at the front end 
+# Allow established connections
+sudo iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+
+# Allow local loopback
+sudo iptables -A INPUT -i lo -j ACCEPT
+
+# Allow SSH (adjust port if you use a non-standard port)
+sudo iptables -A INPUT -p tcp --dport 22 -j ACCEPT
+
+# Allow HTTP/HTTPS for Nextcloud
+sudo iptables -A INPUT -p tcp --dport 80 -j ACCEPT
+sudo iptables -A INPUT -p tcp --dport 443 -j ACCEPT
+
+# Drop all other incoming traffic
+sudo iptables -A INPUT -j DROP
+
+# Allow all outgoing traffic
+sudo iptables -A OUTPUT -j ACCEPT
+
+# Forward traffic to Nextcloud server
+sudo iptables -A FORWARD -d 192.168.0.141 -p tcp --dport 80 -j ACCEPT
+sudo iptables -A FORWARD -d 192.168.0.141 -p tcp --dport 443 -j ACCEPT
+
+----------------------------------
+# Fail2Ban Configuration for Nextcloud
+[nextcloud]
+enabled = true
+port = 80,443
+filter = nextcloud
+logpath = /var/log/nginx/access.log
+maxretry = 5
+bantime = 3600
+findtime = 600
+
+# Create the Nextcloud filter:
+sudo nano /etc/fail2ban/filter.d/nextcloud.filter
+# Add the following pattern:
+[Definition]
+failregex = ^<HOST> - .* "(?:GET|POST|PUT).*index\.php/login.* 401
+            ^<HOST> - .* "(?:GET|POST|PUT).*remote\.php/webdav.* 401
+ignoreregex =
+# Restart Fail2Ban:
+systemctl restart fail2ban
+
+# Nginx Reverse Proxy Configuration for Nextcloud
+server {
+    listen 80;
+    server_name cloud.yourdomain.com;
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl http2;
+    server_name cloud.yourdomain.com;
+
+    ssl_certificate /etc/nginx/ssl/cloud.crt;
+    ssl_certificate_key /etc/nginx/ssl/cloud.key;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_prefer_server_ciphers off;
+    ssl_session_timeout 1d;
+    ssl_session_cache shared:SSL:10m;
+
+    # HSTS (optional, but recommended)
+    add_header Strict-Transport-Security "max-age=31536000" always;
+
+    # Nextcloud headers
+    add_header Referrer-Policy "no-referrer" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-Download-Options "noopen" always;
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header X-Permitted-Cross-Domain-Policies "none" always;
+    add_header X-Robots-Tag "none" always;
+    add_header X-XSS-Protection "1; mode=block" always;
+
+    # Proxy to Nextcloud server
+    location / {
+        proxy_pass http://192.168.0.141;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        
+        # WebDAV support
+        proxy_http_version 1.1;
+        proxy_set_header Connection "";
+        client_max_body_size 10G;
+        proxy_request_buffering off;
+        proxy_buffering off;
+        proxy_read_timeout 900s;
+    }
+}
+
+------------------------------------------------
+# Setting Up Nextcloud Server Post-Installation
+nano /var/www/html/nextcloud/config/config.php
+
+<?php
+$CONFIG = array (
+  'trusted_domains' => 
+  array (
+    0 => 'cloud.yourdomain.com',
+    1 => '192.168.0.141',
+  ),
+  'trusted_proxies' => 
+  array (
+    0 => '192.168.0.102',
+  ),
+  'overwrite.cli.url' => 'https://cloud.yourdomain.com',
+  'overwriteprotocol' => 'https',
+  
+  // Database configuration
+  'dbtype' => 'mysql',
+  'dbname' => 'nextcloud',
+  'dbhost' => '192.168.0.142', // Your MariaDB VM IP
+  'dbport' => '',
+  'dbuser' => 'nextcloud',
+  'dbpassword' => 'your_password_here',
+  
+  // Performance optimizations
+  'memcache.local' => '\\OC\\Memcache\\APCu',
+  'default_phone_region' => 'US', // Change to your country code
+  
+  // Security enhancements
+  'passwordsalt' => '', // Will be auto-generated
+  'secret' => '', // Will be auto-generated
+  'maintenance' => false,
+);
+
+# Set Up Data Directory
+# Create data directory (preferably on a separate volume/mount)
+sudo mkdir -p /data/nextcloud
+sudo chown -R www-data:www-data /data/nextcloud
+# Update config.php to use this directory
+
+# Add this line to your config.php:
+php'datadirectory' => '/data/nextcloud',
+
+# Configure PHP Settings, Optimize PHP for Nextcloud:
+nano /etc/php/8.0/fpm/conf.d/nextcloud.ini
+# Add these settings:
+inimemory_limit = 512M
+upload_max_filesize = 10G
+post_max_size = 10G
+max_execution_time = 300
+date.timezone = America/New_York  # Change to your timezone
+opcache.enable=1
+opcache.interned_strings_buffer=8
+opcache.max_accelerated_files=10000
+opcache.memory_consumption=128
+opcache.save_comments=1
+opcache.revalidate_freq=1
+Restart PHP-FPM:
+bashsudo systemctl restart php8.0-fpm
+
+# Enable Required Apache/Nginx Modules
+For Apache:
+a2enmod rewrite headers env dir mime ssl
+systemctl restart apache2
+
+# Set Up Cron Job for Background Tasks
+sudo crontab -u www-data -e
+# Add this line:
+*/5 * * * * php -f /var/www/html/nextcloud/cron.php
+# Then update Nextcloud to use cron:
+# Add to config.php
+'cron_log' => true,
+'background.mode' => 'cron',
+
+----------------------------------
+#Security Hardening
+# On the Nextcloud server, restrict inbound connections:
+# Allow only connections from front-end proxy
+sudo iptables -A INPUT -s 192.168.0.102 -p tcp --dport 80 -j ACCEPT
+
+# Allow SSH from your admin machine
+sudo iptables -A INPUT -s 192.168.0.100 -p tcp --dport 22 -j ACCEPT
+
+# Allow established connections
+sudo iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+
+# Drop all other incoming traffic
+sudo iptables -A INPUT -j DROP
+
+# Allow all outgoing traffic
+sudo iptables -A OUTPUT -j ACCEPT
+
+-------------------------------------
+# Final Nextcloud Configuration Steps
+# After setting up these configurations, access your Nextcloud through https://cloud.yourdomain.com and:
+# Complete the web installer if you haven't already
+# Install recommended apps from the Nextcloud app store:
+Calendar
+Contacts
+Talk (for communication)
+Collabora Online (for document editing)
+Photos (improved photo management)
