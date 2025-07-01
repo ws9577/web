@@ -69,7 +69,7 @@ kali:         160
     wpscan
     
 
-almar1:       falcon@180
+almar1:       falcon@180, S@nmuMaria
   alpine
     ssh.pub: 
     mariadb, mariadb-client
