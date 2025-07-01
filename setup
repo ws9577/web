@@ -12,7 +12,7 @@ aiprox1:      104
     zone1.bonbon.win
     med.bonbon.win
 
-smurf:        110, 111
+smurf:        bucko@110, 111
   ubuntu
   qemu kvm, virsh
     ssh.pub: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJM2py09BekqiaaMTeLuOO1DY4A82+de5AVIblU/8GpP root@smurf 
@@ -69,7 +69,7 @@ kali:         160
     wpscan
     
 
-almar1:       180
+almar1:       falcon@180
   alpine
     ssh.pub: 
     mariadb, mariadb-client
