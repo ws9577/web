@@ -4,6 +4,7 @@ ubupi:        102
   ubuntu
     nginx
     iptables
+    F2B
     
 aiprox1:      104
   alpine
@@ -89,6 +90,14 @@ ubbk1:        200
 
 ubbk2:        201
   ubuntu
-    mariadb-server, mariadb-client
+    mariadb-server, mariadb-client (removed 2026/1/18)
       ubbk2: /home/bucko/buf/bb1 mariadb
+
+# mariadb setup
+/var/mysql/mariadb.conf.g/99-slave.cnf
+[mysqld]
+server-id=3
+relay_log=/var/log/mysql/mysql-relay-bin.log
+log_bin=/var/log/mysql/mysql-bin.log
+binlog-format = ROW
     
