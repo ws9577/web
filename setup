@@ -92,6 +92,9 @@ ubbk2:        201
   ubuntu
     mariadb-server, mariadb-client (removed 2026/1/18)
       ubbk2: /home/bucko/buf/bb1 mariadb
+  hugo
+  git
+  nginx
 
 # mariadb setup
 /var/mysql/mariadb.conf.g/99-slave.cnf
