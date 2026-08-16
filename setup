@@ -63,6 +63,9 @@ ubdev1:       150
     desktop
     ansible
     gimp
+    git
+    codex
+    ssh
 
 kali:         160
   ubuntu
