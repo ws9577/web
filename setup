@@ -65,7 +65,39 @@ ubdev1:       150
     gimp
     git
     codex
+      /home/bucko/.nvm/versions/node/v24.19.0/bin/codex
     ssh
+
+  ubdev1
+  │
+  └── bucko
+       ├── Git
+       ├── Node.js
+       ├── npm
+       ├── Codex
+       ├── Ansible
+       └── ~/projects/
+
+/home/bucko/
+│
+├── projects/
+│   │
+│   ├── website1/
+│   │   ├── .git/
+│   │   ├── public/
+│   │   ├── src/
+│   │   ├── tests/
+│   │   └── ...
+│   │
+│   ├── website2/
+│   │   └── ...
+│   │
+│   └── ...
+│
+└── .nvm/
+    └── ...
+
+---------------------------------
 
 kali:         160
   ubuntu
