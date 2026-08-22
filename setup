@@ -67,6 +67,7 @@ ubdev1:       150
     codex
       /home/bucko/.nvm/versions/node/v24.19.0/bin/codex
     ssh
+      ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHeF3w1a/860YZcAZX1RPCrSj+hNbv6Fc3SJV7EfIUzY root@ubdev1
 
   ubdev1
   │
