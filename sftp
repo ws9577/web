@@ -30,10 +30,23 @@ sftp username@server_address
 5. Connect to the SFTP server, and you should see the remote directory structure.
 6. You can now transfer files using drag-and-drop or the application's interface.
 
+----------------------------------
+
 # windows client opt 2
-sftp user@192.168.0.141
+sftp user@192.168.0.140
 cd /var/www/website/image
+cd /var/www/bonbon/img/libro/cook/fish/
+                      /ac
+                      /fic
+                      /toonie
+                  /audio
+                  /video
+                  /pubs
+                  /twine
+
 put -r D:/www/img/book/*
+       E:/books/seafood/
+-----------------------------------
 
 # iMac client
 sftp username@server_address
