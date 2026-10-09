@@ -1,0 +1,24 @@
+# change size
+
+cd /var/www/bonbon/img/libro/cook/fish # backup
+
+for f in ../fish_original_backup/*.jpg ../fish_original_backup/*.JPG; do
+  [ -f "$f" ] || continue
+  echo "處理 ${f##*/} ..."
+  convert "$f" -define jpeg:size=3200x3200 -resize '1600x1600>' -quality 80 -strip -interlace Plane "${f##*/}"
+done
+echo "完成"
+
+-------------------------
+# 檔名移除括號
+
+for f in *\(*\)*; do
+  new=$(printf '%s\n' "$f" | sed -E 's/ *\([^)]*\)//g')
+  base="${new%.*}"; ext="${new##*.}"
+  n=1
+  while [ -e "$new" ]; do
+    new="$base-$n.$ext"
+    n=$((n+1))
+  done
+  mv -- "$f" "$new"
+done
