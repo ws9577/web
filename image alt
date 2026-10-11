@@ -1,4 +1,42 @@
+# 安裝 ImageMagick
+# Alpine
+apk add imagemagick imagemagick-jpeg
+
+# Ubuntu / Debian
+sudo apt install imagemagick
+
+
+
 # change size
+
+cat > /usr/local/bin/shrink << 'EOF'
+#!/bin/sh
+# 用法：在圖檔所在資料夾執行 shrink [長邊px] [檔案門檻]
+# 預設：長邊 1600px，只處理超過 500k 的 JPG；原檔備份到 ./backup/
+SIZE=${1:-1600}
+MIN=${2:-500k}
+Q=${3:-80}
+
+mkdir -p backup
+for f in *.jpg *.JPG *.jpeg *.JPEG; do
+  [ -f "$f" ] || continue
+  src="$f"
+  [ -f "backup/$f" ] && src="backup/$f"           # 有備份就用原檔當來源
+  [ -n "$(find "$src" -size +$MIN)" ] || continue # 原檔小於門檻，不動
+  [ -f "backup/$f" ] || cp "$f" "backup/$f" || continue
+  echo "處理 $f ..."
+  $IM "backup/$f" -define jpeg:size=$((SIZE*2))x$((SIZE*2)) \
+    -resize "${SIZE}x${SIZE}>" -quality $Q -strip -interlace Plane "$f.tmp.jpg" \
+    && mv "$f.tmp.jpg" "$f"
+done
+echo "完成"
+chmod +x /usr/local/bin/shrink
+
+--------------------------------------
+# 檔案前10大
+du -k *.jpg | sort -nr | head -10
+
+-----------------------------------
 
 cd /var/www/bonbon/img/libro/cook/fish # backup
 
