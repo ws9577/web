@@ -1,5 +1,90 @@
-# html
+# html 20261011
 
+先縮圖> /usr/local/bin/mkthumbs <<
+#!/bin/sh
+# 用法：在圖檔資料夾執行 mkthumbs [寬度px]，縮圖放 ./thumbs/
+W=${1:-400}
+IM=convert
+command -v magick >/dev/null 2>&1 && IM=magick
+mkdir -p thumbs
+for f in *.jpg *.JPG *.jpeg *.JPEG *.png *.PNG; do
+  [ -f "$f" ] || continue
+  [ "thumbs/$f" -nt "$f" ] && continue   # 縮圖比原圖新就跳過
+  echo "縮圖 $f"
+  $IM "$f" -define jpeg:size=$((W*2))x$((W*2)) -thumbnail "${W}x>" -quality 75 -strip "thumbs/$f"
+done
+chmod +x /usr/local/bin/mkthumbs
+
+---------------------------------
+
+# 批次指令 gallery-all（只做一次）
+# 對每個含 gallery.js 的子資料夾，依序做三件事：縮大圖、做縮圖、更新 list.json。沒有 gallery.js 的資料夾不會被動到
+cat > /usr/local/bin/gallery-all << 'EOF'
+#!/bin/sh
+# 用法：在上層資料夾執行 gallery-all [長邊px] [門檻] [品質]
+find . -name gallery.js | while read -r g; do
+  d=$(dirname "$g")
+  echo "== $d"
+  ( cd "$d" || exit
+    exec </dev/null
+    shrink "$@"
+    mkthumbs
+    ls | grep -iE '\.(jpg|jpeg|png|gif)$' | awk 'BEGIN{printf "["} {printf "%s\"%s\"", (NR>1?",":""), $0} END{print "]"}' > list.json
+  )
+done
+echo "全部完成"
+EOF
+chmod +x /usr/local/bin/gallery-all
+
+# 這支程式也取代了 grip.sh：它會自動產生 list.json，副檔名不論大小寫，資料夾沒有圖時也不會寫出破圖。
+# HTML 不用改。要用不同參數縮大圖時，直接帶進去，例如 gallery-all 2400 900k 85
+
+------------------------------------
+# 新版 gallery.js（縮圖版）
+# 先存成一份範本：
+cat > /root/gallery.js << 'EOF'
+document.addEventListener("DOMContentLoaded", function() {
+    const gallery = document.getElementById('gallery');
+
+    fetch('list.json')
+        .then(response => response.json())
+        .then(images => {
+            images.sort((a, b) => a.localeCompare(b, undefined, {numeric: true}));
+            images.forEach(function(image) {
+                const div = document.createElement('div');
+                div.classList.add('gallery-item', 'w3-col', 'm4');
+                div.innerHTML = `
+                    <a href="${image}" target="_blank">
+                        <img src="thumbs/${image}" alt="" class="w3-hover-opacity" loading="lazy"
+                             onerror="this.onerror=null;this.src='${image}'">
+                    </a>
+                `;
+                gallery.appendChild(div);
+            });
+        })
+        .catch(error => {
+            console.error('Error loading image list:', error);
+        });
+});
+EOF
+
+-------------------------
+
+# 4. 一次更新所有資料夾
+# 在網站最上層（例如 /var/www/bonbon/img）執行：
+sh
+# 把新版 gallery.js 複製到所有舊的位置
+find . -name gallery.js -exec cp /root/gallery.js {} \;
+
+# 縮大圖 + 做縮圖 + 更新 list.json
+gallery-all
+
+# 20261011
+# 之後的日常，資料夾新增照片後，在上層再跑一次 gallery-all，已處理過的圖會跳過，很快。
+# 新資料夾要加入畫冊，只要放一份 browse 的 HTML 和 gallery.js，下次 gallery-all 就會自動納入。
+# backup/ 與 thumbs/ 資料夾都會被忽略，不會出現在畫冊裡。
+# 注意，第 4 步的 cp 會覆蓋所有資料夾的 gallery.js。如果某幾個資料夾的 gallery.js 有自己的修改，先備份：
+---------------------------------------------------
 <!DOCTYPE html>
 <html lang="en">
 <head>
