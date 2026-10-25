@@ -87,6 +87,8 @@ gallery-all (3000 900K 88)
 # backup/ 與 thumbs/ 資料夾都會被忽略，不會出現在畫冊裡。
 # 注意，第 4 步的 cp 會覆蓋所有資料夾的 gallery.js。如果某幾個資料夾的 gallery.js 有自己的修改，先備份：
 ---------------------------------------------------
+# browser.html template 202610
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
