@@ -40,9 +40,9 @@ chmod +x /usr/local/bin/gallery-all
 # HTML 不用改。要用不同參數縮大圖時，直接帶進去，例如 gallery-all 2400 900k 85
 
 ------------------------------------
-# 新版 gallery.js（縮圖版）
+# 新版 gallery.js（縮圖版） 202610
 # 先存成一份範本：
-cat > /root/gallery.js << 'EOF'
+
 document.addEventListener("DOMContentLoaded", function() {
     const gallery = document.getElementById('gallery');
 
@@ -66,7 +66,7 @@ document.addEventListener("DOMContentLoaded", function() {
             console.error('Error loading image list:', error);
         });
 });
-EOF
+
 
 -------------------------
 
