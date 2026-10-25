@@ -42,6 +42,7 @@ chmod +x /usr/local/bin/gallery-all
 ------------------------------------
 # 新版 gallery.js（縮圖版） 202610
 # 先存成一份範本：
+# 有這檔案才能使用 gallery-all, 新資料夾要建立一份
 
 document.addEventListener("DOMContentLoaded", function() {
     const gallery = document.getElementById('gallery');
