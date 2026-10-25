@@ -76,8 +76,10 @@ sh
 # 把新版 gallery.js 複製到所有舊的位置
 find . -name gallery.js -exec cp /root/gallery.js {} \;
 
-# 縮大圖 + 做縮圖 + 更新 list.json
-gallery-all
+# 縮大圖 + 做縮圖 + 更新 list.json，一指令搞定
+# su - 權限
+
+gallery-all (3000 900K 88)
 
 # 20261011
 # 之後的日常，資料夾新增照片後，在上層再跑一次 gallery-all，已處理過的圖會跳過，很快。
