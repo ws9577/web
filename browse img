@@ -1,3 +1,47 @@
+# 優化瀏覽20261101
+
+
+#2支小指令
+
+cat > /usr/local/bin/gallery-index << 'EOF'
+#!/bin/sh
+# gallery-index：掃描 /var/www/bonbon/img 下所有含 gallery.js 的資料夾，
+# 產生目錄頁用的 catalog.json（資料夾路徑 + 瀏覽頁檔名）。
+ROOT=/var/www/bonbon/img
+cd "$ROOT" || exit 1
+find . -name gallery.js | sort | while read -r g; do
+  d=${g#./}; d=${d%/gallery.js}
+  [ "$d" = "gallery.js" ] && continue
+  p=$(ls "$d" | grep -iE '^(browse.*|index)\.html$' | head -1)
+  [ -n "$p" ] && echo "$d|$p"
+done | awk -F'|' 'BEGIN{printf "["} {printf "%s{\"dir\":\"%s\",\"page\":\"%s\"}", (NR>1?",":""), $1, $2} END{print "]"}' > catalog.json
+echo "catalog.json 已更新：$(grep -o '"dir"' catalog.json | wc -l) 個資料夾"
+EOF
+cat > /usr/local/bin/gallery-new << 'EOF'
+#!/bin/sh
+# gallery-new：在新的圖片資料夾內建立畫冊（gallery.js 標記 + 瀏覽頁）
+# 用法：cd 新資料夾; gallery-new [頁面檔名]   預設 browse.html
+G=/var/www/bonbon/img/_gallery
+H=${1:-browse.html}
+[ -f gallery.js ] || cp "$G/stub.js" gallery.js
+[ -f "$H" ] || cp "$G/browse.html" "$H"
+echo "已建立 gallery.js 與 $H；接著執行 gallery-all"
+EOF
+chmod +x /usr/local/bin/gallery-index /usr/local/bin/gallery-new
+echo 'gallery-index' >> /usr/local/bin/gallery-all
+
+
+使用
+目錄頁網址：https://med.bonbon.win/img/catalog.html
+之後新增照片：上傳後在 img/ 執行 gallery-all 2400 900k 85。
+新資料夾：先在該處執行 gallery-new，再跑一次 gallery-all。
+注意事項
+**只在 /var/www/bonbon/img 下執行 gallery-all，不要在 /var/www/bonbon 或 audio 資料夾執行。它會重寫 list.json，而且只列圖片，會破壞音樂庫的清單。**
+titles.json 裡的中文名稱是我依你的書名猜的：fish 完美海鮮、kk 廚刀、steak 完美牛排、beef 完美牛肉。請確認路徑和書名，不需要的行可以刪掉，沒設定的資料夾會顯示資料夾名稱。
+目錄頁只列出有 browse*.html 或 index.html 的資料夾，沒有瀏覽頁的會被略過。
+-----------------------------------------
+
+
 # html 20261011
 
 先縮圖> /usr/local/bin/mkthumbs <<
